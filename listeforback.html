@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style type="text/css">
+            body {
+    margin: 0;
+    min-width: 250px;
+    box-sizing: border-box;
+}
+
+header {
+    background-color: #3682f4;
+    padding: 30px 40px;
+    color: white;
+    text-align: center;
+}
+
+label{
+    padding: 10px;
+    font-size: 26px;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+}
+
+li {
+    list-style-type: none;
+    padding: 20px;
+    margin-inline: 50px;
+    margin-block: 30px;
+    border-radius: 5px;
+    box-shadow: 4px 4px 5px 5px #888888;
+    background-color: #3682f4;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    width: auto;
+    position: relative;
+}
+
+h2 {
+    transition: 0.4s;
+    cursor: pointer;
+}
+
+h2:hover {
+    letter-spacing: 2px;
+}
+
+li.checked {
+    background: #888;
+    color: #fff;
+    text-decoration: line-through;
+}
+
+
+
+.input {
+    margin: 10px;
+    border: none;
+    border-radius: 10px;
+    width: 50%;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.close {
+    position:absolute;
+    right: 0;
+    top:0;
+    margin: 5px;
+    padding: 12px 16px 12px 16px;
+}
+
+.close:hover {
+    color: red;
+}
+
+.edit {
+    position:absolute;
+    right: 0;
+    bottom:0;
+    margin: 5px;
+    padding: 12px 16px 12px 16px;
+}
+
+.edit:hover {
+    color: green;
+}
+
+.ct {
+    text-align: center;
+    justify-content: center;
+}
+
+.add {
+    background-color: green;
+    text-transform: uppercase;
+    color:white;
+    border-radius: 10px;
+    padding: 5px 40px;
+    cursor: pointer;
+    
+}
+
+.filterList {
+    margin-top: 30px;
+    position: relative;
+    
+}
+
+.filter {
+    margin-inline: 20px;
+    background-color: rgb(255, 174, 0);
+    text-transform: uppercase;
+    color:white;
+    border-radius: 10px;
+    padding: 5px 40px;
+    cursor: pointer;
+}
+
+.scr {
+    height: 400px;
+    overflow: auto;
+}
+
+.info {
+    margin-top: 20px;
+}
+
+#todos {
+    text-align: center;
+    justify-content: center;
+}
+        </style>
+        <title>Task Records</title>
+        <link href="style.css" rel="stylesheet">
+    </head>
+    <body>
+        <header class="ct">
+            <h2>Task Records</h2>
+            <label>Task: </label>
+            <input class="input" type="text" id="inp" placeholder="Task..." required>
+            <br>
+            <label>Priority: </label>
+            <select class="input" id="priority" required>
+                <option value="High" selected>High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select>
+            <br>
+            <span onclick="addItem()" class="add">Add</span>
+            <br>
+            <div class="filterList">
+                <label>Filter: </label>
+                <span class="filter" id="all" onclick="sortList('all')">ALL</span>
+                <span class="filter" id="Low" onclick="sortList('Low')">LOW</span>
+                <span class="filter" id="Medium" onclick="sortList('Medium')">MEDIUM</span>
+                <span class="filter" id="High" onclick="sortList('High')">HIGH</span>
+            </div>
+            <div class="info"><label>Displayed tasks: <span id="inf">0</span></label></div>
+            
+        </header>
+        <div class="scr">
+            <ul id="todos" >
+                <li>Add a new Task! To complete the tasks just click on them. Edit them in the popup window. </li>
+            </ul>
+        </div>
+        
+
+        <script>
+            
+var items = [];//array for to-do-s
+var count = 0;//COUNTER FOR ID
+var lister = document.querySelector('ul');//checking for completed
+var fltr = "all";//filter default value is 0(all)
+
+addItem = () => {//ADD ITEM FROM FORM FUNCTION
+    let todo = document.getElementById("inp").value;
+    let priorityGet = document.getElementById("priority").value;
+
+    if(todo && priorityGet){//CHECK IF NOT EMPTY
+
+        var item = {//new object to be added in array
+            id: count,
+            description: todo,
+            priority: priorityGet,
+            completed: false
+        }
+
+        items.push(item);//push in main array
+
+        document.getElementById("inp").value = "";//CLEAR FIELD
+
+        // console.log(items);
+
+        displayList(items);
+
+        count++;
+    }
+    else alert("Type something");//no null values
+    
+}
+
+//DISPLAYING ALL THE TO_DO-s
+displayList = list => {
+    //FIRST, REMOVE ALL PREVIOUS ELEMENTS
+    let remove = document.getElementById("todos");
+    while (remove.hasChildNodes()) {
+        remove.removeChild(remove.firstChild);
+    }
+
+    changeInfo(list);
+
+    list.map( elem => {
+        let tag = document.createElement("li");//create the li element of the list
+        if (elem.completed) tag.setAttribute("class", "checked");
+        else tag.setAttribute("class","");
+        tag.setAttribute("id",elem.id);
+
+        let text = document.createTextNode(elem.description);//the description of the to-do
+        tag.appendChild(text);
+
+        let span = document.createElement("SPAN");//the delete button
+        span.setAttribute("class","close");
+        span.setAttribute("onclick", `deleteCurrent(${elem.id})`)//using onclick function
+        text = document.createTextNode("X");
+        span.appendChild(text);
+        tag.appendChild(span);
+
+        let br = document.createElement("hr");//for separation
+        tag.appendChild(br);
+
+        text = document.createTextNode(`Priority: ${elem.priority}`);//element priority display
+        tag.appendChild(text);
+
+        span = document.createElement("SPAN");//the edit button
+        span.setAttribute("class", "edit");
+        span.setAttribute("onclick", `editCurrent(${elem.id})`)//using onclick
+        text = document.createTextNode("edit");
+        span.appendChild(text);
+        tag.appendChild(span);
+
+        document.getElementById("todos").appendChild(tag);//append all the info of the list element 
+    })
+}
+
+//get the current index from the id
+currentIndex = id => {
+    let checkIndex = el => el.id === id;
+    let currentId = items.findIndex(checkIndex);
+    return currentId;
+}
+
+
+//DELETE ITEM FROM LIST WITH FUNCTION ONCLICK
+deleteCurrent = id => {
+    //delete from array
+    items.splice(currentIndex(id), 1);
+    if (fltr === "all") displayList(items);
+    else sortList(fltr);
+}
+
+//EDIT CURRENT TO DO WITH A POPUP
+editCurrent = id => {
+    let newVal = prompt("Add the new value of this to-do:",items[currentIndex(id)].description);
+
+    if (newVal === null || newVal === ""){//only if not null value
+        alert("No new value added. Keeping the old value.");
+    }
+    else{
+        items[currentIndex(id)].description = newVal;
+        if(fltr === "all") displayList(items);
+        else sortList(fltr);
+    }
+}
+
+//SORT WITH FILTER TO NEW LIST
+sortList = pr => {
+    if(pr != "all"){//if there is a filter applied
+        const sorter = items.filter( item => item.priority === pr);
+        displayList(sorter);
+        fltr = pr;
+    }
+    else {displayList(items); fltr = "all"}
+}
+
+//CHECK/UNCHECK ITEMS WITH EVENT LISTENER
+lister.addEventListener('click', check => {
+    if (check.target.tagName === 'LI') {
+        check.target.classList.toggle('checked');
+        items[check.target.id].completed = !items[check.target.id].completed;
+        console.log(items[check.target.id]);
+    }
+}, false);
+
+//change the counter of to-do-s that is displayed
+changeInfo = nr => {
+    document.getElementById("inf").innerHTML = nr.length;//change innerHTML to display number
+}
+
+
+
+        </script>
+    </body>
+</html>
